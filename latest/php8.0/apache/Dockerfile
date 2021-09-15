@@ -147,15 +147,16 @@ VOLUME /var/www/html
 COPY --chown=www-data:www-data wp-config-docker.php /usr/src/wordpress/
 COPY docker-entrypoint.sh /usr/local/bin/
 
-# Install OpenSSH and set the password for root to "Docker!". In this example, "apk add" is the install instruction for an Alpine Linux-based image.
-RUN apk add openssh \
-     && echo "root:Docker!" | chpasswd 
-
-# Copy the sshd_config file to the /etc/ssh/ directory
-COPY sshd_config /etc/ssh/
-
-# Open port 2222 for SSH access
+RUN apt-get update && apt-get install -y openssh-server
+RUN mkdir /var/run/sshd
+RUN echo 'root:screencast' | chpasswd
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
 EXPOSE 22 2222
+CMD ["/usr/sbin/sshd", "-D"]
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
