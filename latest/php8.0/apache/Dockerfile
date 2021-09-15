@@ -155,7 +155,7 @@ RUN apk add openssh \
 COPY sshd_config /etc/ssh/
 
 # Open port 2222 for SSH access
-EXPOSE 80 2222
+EXPOSE 22 2222
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
